@@ -76,12 +76,12 @@ class GraphAttentionEncoder(tf.keras.layers.Layer):
                             for _ in range(self.num_layers)]
 
     def call(self, x, mask=None, cur_num_nodes=None):
-
         x = tf.concat((self.init_embed_depot(x[0])[:, None, :],  # (batch_size, 2) --> (batch_size, 1, 2)
-                       self.init_embed(tf.concat((x[1], x[2][:, :, None]), axis=-1))  # (batch_size, n_nodes-1, 2) + (batch_size, n_nodes-1)
+            self.init_embed(tf.concat((x[1], x[2][:, :, None],x[3][:, :, None],x[4][:, :, None],x[5][:, :, None]), axis=-1))  # (batch_size, n_nodes-1, 2) + (batch_size, n_nodes-1)
                        ), axis=1)  # (batch_size, n_nodes, input_dim)
 
         # stack attention layers
+        #print(tf.shape(x))
         for i in range(self.num_layers):
             x = self.mha_layers[i](x, mask)
 
