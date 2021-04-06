@@ -17,15 +17,25 @@ def copy_of_tf_model(model, embedding_dim=128, graph_size=20):
                   50: 40.,
                   100: 50.
                   }
-    time_windows=[[0,5],[5,9],[0,9]]
-    time_windows=[str(i) for i in time_windows]
+    #time_windows=[[0,5],[5,9],[0,9]]
+    #time_windows=[str(i) for i in time_windows]
+    list_time_windows_min=[0,5]
+    list_time_windows_max=[5,10]
+    time_windows_min=np.random.choice(list_time_windows_min, size=(2, graph_size), replace=True, p=None)
+    time_windows_max=np.zeros(shape=(2, graph_size))
+    for n in range(2):
+        for m in range(graph_size):
+            a=0
+            while a <=time_windows_min[n][m]:
+                a=random.choice(list_time_windows_max)
+            time_windows_max[n][m]=a
     time_windows_array=np.random.choice(time_windows, size=(2, graph_size), replace=True, p=None)
     service_time=np.array([1,2,0.5])
     service_time_array=np.random.choice(service_time, size=(2, graph_size), replace=True, p=None)
     data_random = [tf.random.uniform((2, 2,), minval=0, maxval=1, dtype=tf.dtypes.float32),
                    tf.random.uniform((2, graph_size, 2), minval=0, maxval=1, dtype=tf.dtypes.float32),
                    tf.cast(tf.random.uniform(minval=1, maxval=10, shape=(2, graph_size),
-                                             dtype=tf.int32), tf.float32) / tf.cast(CAPACITIES[graph_size], tf.float32),tf.convert_to_tensor(time_windows_array,dtype='string'),tf.convert_to_tensor(service_time_array,dtype='float32')]
+                                             dtype=tf.int32), tf.float32) / tf.cast(CAPACITIES[graph_size], tf.float32),tf.convert_to_tensor(time_windows_min,dtype='float32'),tf.convert_to_tensor(time_windows_max,dtype='float32'),tf.convert_to_tensor(service_time_array,dtype='float32')]
 
     new_model = AttentionDynamicModel(embedding_dim)
     set_decode_type(new_model, "sampling")
@@ -90,7 +100,6 @@ class RolloutBaseline:
 
         # controls the amount of warmup
         self.alpha = 0.0
-
         self.running_average_cost = None
 
         # Checkpoint params
@@ -212,15 +221,26 @@ def load_tf_model(path, embedding_dim=128, graph_size=20, n_encode_layers=2):
                   50: 40.,
                   100: 50.
                   }
-    time_windows=[[0,5],[5,9],[0,9]]
-    time_windows=[str(i) for i in time_windows]
-    time_windows_array=np.random.choice(time_windows, size=(2, graph_size), replace=True, p=None)
+    #time_windows=[[0,5],[5,9],[0,9]]
+    #time_windows=[str(i) for i in time_windows]
+    list_time_windows_min=[0,5]
+    list_time_windows_max=[5,10]
+    time_windows_min=np.random.choice(list_time_windows_min, size=(2, graph_size), replace=True, p=None)
+    time_windows_max=np.zeros(shape=(2, graph_size))
+    for n in range(2):
+        for m in range(graph_size):
+            a=0
+            while a <=time_windows_min[n][m]:
+                a=random.choice(list_time_windows_max)
+            time_windows_max[n][m]=a
+    #time_windows_array=np.random.choice(time_windows, size=(2, graph_size), replace=True, p=None)
     service_time=np.array([1,2,0.5])
     service_time_array=np.random.choice(service_time, size=(2, graph_size), replace=True, p=None)
     data_random = [tf.random.uniform((2, 2,), minval=0, maxval=1, dtype=tf.dtypes.float32),
                    tf.random.uniform((2, graph_size, 2), minval=0, maxval=1, dtype=tf.dtypes.float32),
                    tf.cast(tf.random.uniform(minval=1, maxval=10, shape=(2, graph_size),
-                                             dtype=tf.int32), tf.float32) /tf.cast(CAPACITIES[graph_size],tf.float32),tf.convert_to_tensor(time_windows_array,dtype='string'),tf.convert_to_tensor(service_time_array,dtype='float32')]
+                                             dtype=tf.int32), tf.float32) /tf.cast(CAPACITIES[graph_size],tf.float32),tf.convert_to_tensor(time_windows_min,dtype='float32'),
+                   tf.convert_to_tensor(time_windows_max,dtype='float32'),tf.convert_to_tensor(service_time_array,dtype='float32')]
     model_loaded = AttentionDynamicModel(embedding_dim,n_encode_layers=n_encode_layers)
     set_decode_type(model_loaded, "greedy")
     _, _ = model_loaded(data_random)
