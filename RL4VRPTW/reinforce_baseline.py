@@ -29,7 +29,7 @@ def copy_of_tf_model(model, embedding_dim=128, graph_size=20):
             while a <=time_windows_min[n][m]:
                 a=random.choice(list_time_windows_max)
             time_windows_max[n][m]=a
-    time_windows_array=np.random.choice(time_windows, size=(2, graph_size), replace=True, p=None)
+    #time_windows_array=np.random.choice(time_windows, size=(2, graph_size), replace=True, p=None)
     service_time=np.array([1,2,0.5])
     service_time_array=np.random.choice(service_time, size=(2, graph_size), replace=True, p=None)
     data_random = [tf.random.uniform((2, 2,), minval=0, maxval=1, dtype=tf.dtypes.float32),
