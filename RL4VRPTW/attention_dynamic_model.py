@@ -219,6 +219,7 @@ class AttentionDynamicModel(tf.keras.Model):
     def call(self, inputs, return_pi=False):
 
         embeddings, mean_graph_emb = self.embedder(inputs)
+        #print(tf.shape(embeddings))
 
         self.batch_size = tf.shape(embeddings)[0]
 
@@ -276,7 +277,6 @@ class AttentionDynamicModel(tf.keras.Model):
         _log_p, pi = tf.stack(outputs, 1), tf.cast(tf.stack(sequences, 1), tf.float32)
         cost = self.problem.get_costs(inputs, pi)
         ll = self.get_log_likelihood(_log_p, pi)
-
         if return_pi:
             return cost, ll, pi
 
