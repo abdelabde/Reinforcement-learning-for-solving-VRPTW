@@ -22,22 +22,35 @@ def create_data_on_disk(graph_size, num_samples, is_save=True, filename=None, is
         100: 50.
     }
     #Time windows and service time
-    time_windows=[[0,5],[5,9],[0,9]]
-    time_windows=[str(i) for i in time_windows]
-    time_windows_array=np.random.choice(time_windows, size=(num_samples, graph_size), replace=True, p=None)
+    #time_windows=[[0,5],[5,9],[0,9]]
+    #time_windows=[str(i) for i in time_windows]
+    list_time_windows_min=[0,5]
+    list_time_windows_max=[5,10]
+    time_windows_min=np.random.choice(list_time_windows_min, size=(num_samples, graph_size), replace=True, p=None)  
+    time_windows_max=np.zeros(shape=(num_samples, graph_size))
+    for n in range(num_samples):
+        for m in range(graph_size):
+            a=0
+            while a <=time_windows_min[n][m]:
+                a=random.choice(list_time_windows_max)
+            time_windows_max[n][m]=a
+    #time_windows_array=np.random.choice(time_windows, size=(num_samples, graph_size), replace=True, p=None)
+    
     service_time=np.array([1,2,0.5])
     service_time_array=np.random.choice(service_time, size=(num_samples, graph_size), replace=True, p=None)
     depo, graphs, demand = (tf.random.uniform(minval=0, maxval=1, shape=(num_samples, 2), seed=seed),
                             tf.random.uniform(minval=0, maxval=1, shape=(num_samples, graph_size, 2), seed=seed),
                             tf.cast(tf.random.uniform(minval=1, maxval=10, shape=(num_samples, graph_size),
                                                       dtype=tf.int32, seed=seed), tf.float32) /                  tf.cast(CAPACITIES[graph_size], tf.float32))
-    time_windows=tf.convert_to_tensor(time_windows_array,dtype='string')
+    time_windows_min=tf.convert_to_tensor(time_windows_min,dtype='float32')
+    time_windows_max=tf.convert_to_tensor(time_windows_max,dtype='float32')
+    #time_windows=tf.convert_to_tensor(time_windows_array,dtype='string')
     service_time=tf.convert_to_tensor(service_time_array,dtype='float32')
     if is_save:
-        save_to_pickle('Validation_dataset_{}.pkl'.format(filename), (depo, graphs, demand,time_windows,service_time))
+        save_to_pickle('Validation_dataset_{}.pkl'.format(filename), (depo, graphs, demand,time_windows_min,time_windows_max,service_time))
 
     if is_return:
-        return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows),list(service_time)))
+        return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows_min),list(time_windows_max),list(service_time)))
 
 
 def save_to_pickle(filename, item):
@@ -62,9 +75,9 @@ def read_from_pickle(path, return_tf_data_set=True, num_samples=None):
     if return_tf_data_set:
         depo, graphs, demand, time_windows, service_time = objects
         if num_samples is not None:
-            return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows),list(service_time))).take(num_samples)
+            return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows_min),list(time_windows_max),list(service_time))).take(num_samples)
         else:
-            return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows),list(service_time)))
+            return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows_min),list(time_windows_max),list(service_time)))
     else:
         return objects
 
@@ -80,19 +93,30 @@ def generate_data_onfly(num_samples=10000, graph_size=20):
         100: 50.
     }
     #Time windows and service time
-    time_windows=[[0,5],[5,9],[0,9]]
-    time_windows=[str(i) for i in time_windows]
-    time_windows_array=np.random.choice(time_windows, size=(num_samples, graph_size), replace=True, p=None)
+    #time_windows=[[0,5],[5,9],[0,9]]
+    #time_windows=[str(i) for i in time_windows]
+    list_time_windows_min=[0,5]
+    list_time_windows_max=[5,10]
+    time_windows_min=np.random.choice(list_time_windows_min, size=(num_samples, graph_size), replace=True, p=None)
+    time_windows_max=np.zeros(shape=(num_samples, graph_size))
+    for n in range(num_samples):
+        for m in range(graph_size):
+            a=0
+            while a <=time_windows_min[n][m]:
+                a=random.choice(list_time_windows_max)
+            time_windows_max[n][m]=a
+    #time_windows_array=np.random.choice(time_windows, size=(num_samples, graph_size), replace=True, p=None)
     service_time=np.array([1,2,0.5])
     service_time_array=np.random.choice(service_time, size=(num_samples, graph_size), replace=True, p=None)
     depo, graphs, demand = (tf.random.uniform(minval=0, maxval=1, shape=(num_samples, 2)),
                             tf.random.uniform(minval=0, maxval=1, shape=(num_samples, graph_size, 2)),
                             tf.cast(tf.random.uniform(minval=1, maxval=10, shape=(num_samples, graph_size),
-                                                      dtype=tf.int32), tf.float32)/tf.cast(CAPACITIES[graph_size], tf.float32)
-                            )
-    time_windows=tf.convert_to_tensor(time_windows_array,dtype='string')
+                                                      dtype=tf.int32), tf.float32)/tf.cast(CAPACITIES[graph_size], tf.float32))
+    time_windows_min=tf.convert_to_tensor(time_windows_min,dtype='float32')
+    time_windows_max=tf.convert_to_tensor(time_windows_max,dtype='float32')                       
+    #time_windows=tf.convert_to_tensor(time_windows_array,dtype='string')
     service_time=tf.convert_to_tensor(service_time_array,dtype='float32')
-    return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows),list(service_time)))
+    return tf.data.Dataset.from_tensor_slices((list(depo), list(graphs), list(demand),list(time_windows_min),list(time_windows_max),list(service_time)))
 
 
 def get_results(train_loss_results, train_cost_results, val_cost, save_results=True, filename=None, plots=True):
